@@ -1,0 +1,134 @@
+
+values=[3,5,2,9,12,5,23,15]
+nodes=[0]
+
+def minimax(node,depth,is_max):
+    nodes[0]+=1
+    if depth==0:
+        return values[node]
+    if is_max:
+        return max(minimax(node*2,depth-1,False),minimax(node*2+1,depth-1,False))
+    else:
+        return min(minimax(node*2,depth-1,True),minimax(node*2+1,depth-1,True))
+
+def alpha_beta(node,depth,is_max,alpha,beta):
+    nodes[0]+=1
+    if depth==0:
+        return values[node]
+    if is_max:
+        best=float("-inf")
+        for i in [0,1]:
+            best=max(best,alpha_beta(node*2+i,depth-1,False,alpha,beta))
+            alpha=max(alpha,best)
+            if beta<=alpha:
+                break
+        return best
+    else:
+        best=float("inf")
+        for i in [0,1]:
+            best=min(best,alpha_beta(node*2+i,depth-1,True,alpha,beta))
+            beta=min(beta,best)
+            if beta<=alpha:
+                break
+        return best
+
+nodes[0]=0
+minimax_result=minimax(0,3,True)
+minimax_nodes=nodes[0]
+
+nodes[0]=0
+alpha_beta_result=alpha_beta(0,3,True,float("-inf"),float("inf"))
+alpha_beta_nodes=nodes[0]
+
+print("Leaf Values:",values)
+print("\nMinimax Result:",minimax_result)
+print("Minimax Nodes:",minimax_nodes)
+print("\nAlpha-Beta Result:",alpha_beta_result)
+print("Alpha-Beta Nodes:",alpha_beta_nodes)
+print("\nNodes Saved:",minimax_nodes-alpha_beta_nodes)
+______________________________________________________________________________________________________
+
+facts={"furry","meows"}
+rules=[
+    (["furry","meows"],"is_cat"),
+    (["is_cat"],"likes_milk"),
+    (["likes_milk"],"drinks_milk")
+]
+
+def bc(goal,known,depth=0):
+    indent=" "*depth
+    if goal in known:
+        print(indent+goal+" is a known fact")
+        return True
+    for premises,conclusion in rules:
+        if conclusion==goal:
+            print(indent+"Trying rule:",premises,"->",conclusion)
+            if all(bc(p,known,depth+1) for p in premises):
+                print(indent+conclusion+" PROVED")
+                return True
+    print(indent+goal+" cannot be proved")
+    return False
+
+for goal in ["is_cat","drinks_milk","is_dog"]:
+    print("\nProve:",goal)
+    result=bc(goal,facts)
+    print("Result:",result)
+______________________________________________________________________________________________________
+
+car_evaluation.csv:
+
+buying,maint,doors,persons,lug_boot,safety,class
+vhigh,vhigh,2,2,small,low,unacc
+vhigh,vhigh,2,2,small,med,unacc
+vhigh,vhigh,2,2,small,high,unacc
+vhigh,vhigh,2,2,med,low,unacc
+vhigh,vhigh,2,2,med,med,unacc
+vhigh,vhigh,2,2,med,high,unacc
+vhigh,vhigh,2,2,big,low,unacc
+vhigh,vhigh,2,2,big,med,unacc
+vhigh,vhigh,2,2,big,high,unacc
+vhigh,vhigh,2,4,small,low,unacc
+
+========================================================
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+df=pd.read_csv("car_evaluation.csv")
+print("Dataset:")
+print(df)
+
+print("\nFrequency of Categorical Variables:")
+for col in df.columns:
+    print("\n",col)
+    print(df[col].value_counts())
+
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+X=df.drop("class",axis=1)
+y=df["class"]
+encoder=LabelEncoder()
+
+for col in X.columns:
+    X[col]=encoder.fit_transform(X[col])
+
+y=encoder.fit_transform(y)
+print("\nEncoded Features:")
+print(X)
+
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.33,random_state=42)
+
+model=RandomForestClassifier(n_estimators=10,random_state=42)
+model.fit(X_train,y_train)
+y_pred=model.predict(X_test)
+accuracy=accuracy_score(y_test,y_pred)
+
+print("\nActual Values:")
+print(y_test)
+print("\nPredicted Values:")
+print(y_pred)
+print("\nAccuracy of Random Forest Classifier:",accuracy*100,"%")

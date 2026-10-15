@@ -1,0 +1,138 @@
+
+def dls(graph,node,goal,limit,path=[]):
+    path=path+[node]
+
+    if node==goal:
+        return path
+
+    if limit<=0:
+        return None
+
+    for child in graph.get(node,[]):
+        result=dls(graph,child,goal,limit-1,path)
+
+        if result:
+            return result
+
+    return None
+
+def ids(graph,start,goal,max_depth):
+    for depth in range(max_depth+1):
+        result=dls(graph,start,goal,depth)
+
+        if result:
+            return result,depth
+
+    return None,None
+
+graph={
+    'A':['B','C'],
+    'B':['D','E'],
+    'C':['F'],
+    'D':[],
+    'E':[],
+    'F':[]
+}
+
+path,depth_found=ids(graph,'A','F',5)
+
+print("Path found:",path)
+print("Found at depth:",depth_found)
+______________________________________________________________________________________________________
+
+import numpy as np
+
+np.random.seed(42)
+
+X=np.vstack([
+    np.random.randn(50,2)+[2,2],
+    np.random.randn(50,2)+[0,0]
+])
+
+y=np.array([0]*50+[1]*50)
+
+X_train,X_test=X[:80],X[80:]
+y_train,y_test=y[:80],y[80:]
+
+classes=np.unique(y_train)
+means={}
+variances={}
+priors={}
+
+for c in classes:
+    X_c=X_train[y_train==c]
+    means[c]=X_c.mean(axis=0)
+    variances[c]=X_c.var(axis=0)
+    priors[c]=len(X_c)/len(X_train)
+
+def gaussian_pdf(x,mean,var):
+    eps=1e-6
+    coeff=1/np.sqrt(2*np.pi*(var+eps))
+    exp_val=np.exp(-((x-mean)**2)/(2*(var+eps)))
+    return coeff*exp_val
+
+def predict(X):
+    predictions=[]
+
+    for x in X:
+        posteriors={}
+
+        for c in classes:
+            posteriors[c]=np.log(priors[c])
+            posteriors[c]+=np.sum(
+                np.log(gaussian_pdf(x,means[c],variances[c]))
+            )
+
+        predictions.append(max(posteriors,key=posteriors.get))
+
+    return np.array(predictions)
+
+y_pred=predict(X_test)
+accuracy=np.mean(y_pred==y_test)
+
+print("Gaussian Naive Bayes Accuracy:",round(accuracy,2))
+______________________________________________________________________________________________________
+
+def is_safe(region,color,assignment,graph):
+    for neighbor in graph[region]:
+        if neighbor in assignment and assignment[neighbor]==color:
+            return False
+    return True
+
+def map_coloring(graph,colors,assignment,regions):
+    if len(assignment)==len(regions):
+        return True
+    for region in regions:
+        if region not in assignment:
+            break
+    for color in colors:
+        if is_safe(region,color,assignment,graph):
+            assignment[region]=color
+            if map_coloring(graph,colors,assignment,regions):
+                return True
+            del assignment[region]
+    return False
+
+graph={
+    'A':['B','C','E'],
+    'B':['A','C','D','E'],
+    'C':['A','B','E','F'],
+    'D':['B','E'],
+    'E':['A','B','C','D','F'],
+    'F':['C','E']
+}
+
+colors=["Red","Green","Blue","Yellow"]
+regions=list(graph.keys())
+assignment={}
+
+print("--- Map Coloring Problem using CSP ---")
+print("Regions:",regions)
+print("Colors:",colors)
+
+if map_coloring(graph,colors,assignment,regions):
+    print("\nSolution Found:")
+    for region in regions:
+        print(region,"->",assignment[region])
+else:
+    print("\nNo solution exists.")

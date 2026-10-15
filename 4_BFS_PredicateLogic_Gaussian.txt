@@ -1,0 +1,72 @@
+from collections import deque
+def bfs_state_space(graph,start):
+    visited=set()
+    queue=deque([start])
+    visited.add(start)
+    path=[]
+    while queue:
+        node=queue.popleft()
+        path.append(node)
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+    return path
+graph={
+    'A':['B','C'],
+    'B':['A','D'],
+    'C':['A','E'],
+    'D':['B','E'],
+    'E':['C','D']
+}
+start='A'
+result=bfs_state_space(graph,start)
+print("Start Vertex:",start)
+print("BFS Traversal:",result)
+______________________________________________________________________________________________________
+domain=[1,2,3,4,5]
+def is_even(x):
+    return x%2==0
+def is_pos(x):
+    return x>0
+def greater(x,y):
+    return x>y
+def forall(pred):
+    return all(pred(x) for x in domain)
+def exists(pred):
+    return any(pred(x) for x in domain)
+print("Domain:",domain)
+print("Forall x, is_even(x) =",forall(is_even))
+print("Forall x, is_pos(x) =",forall(is_pos))
+print("Exists x, is_even(x) =",exists(is_even))
+print("Exists x, x>10 =",exists(lambda x:x>10))
+print("Exists x, x>3 =",exists(lambda x:x>3))
+print("Forall x, exists y: y divides x =",forall(lambda x:exists(lambda y:x%y==0)))
+
+______________________________________________________________________________________________________
+
+import numpy as np
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+np.random.seed(42)
+class0=np.random.randn(67,2)*1.5+[-2,5]
+class1=np.random.randn(67,2)*1.5+[0,0]
+class2=np.random.randn(66,2)*1.5+[6,-0.3]
+X=np.vstack([class0,class1,class2])
+y=np.array([0]*67+[1]*67+[2]*66)
+X_train=X[:160]
+X_test=X[160:]
+y_train=y[:160]
+y_test=y[160:]
+model=GaussianNB()
+model.fit(X_train,y_train)
+y_pred=model.predict(X_test)
+accuracy=accuracy_score(y_test,y_pred)
+print("Gaussian Naive Bayes Classifier")
+print("Number of classes:",3)
+print("Total samples:",200)
+print("\nTest Values:")
+test_values=np.array([[-2,5],[0,0],[6,-0.3]])
+print(test_values)
+print("Predicted Classes:",model.predict(test_values))
+print("\nAccuracy Score:",round(accuracy,2))

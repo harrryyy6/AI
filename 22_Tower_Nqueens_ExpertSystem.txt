@@ -1,0 +1,83 @@
+
+def tower_of_hanoi(n,source,auxiliary,target,moves=None):
+    if moves is None:
+        moves=[]
+    if n==1:
+        moves.append((1,source,target))
+        return moves
+    tower_of_hanoi(n-1,source,target,auxiliary,moves)
+    moves.append((n,source,target))
+    tower_of_hanoi(n-1,auxiliary,source,target,moves)
+    return moves
+
+moves=tower_of_hanoi(3,'A','B','C')
+print("Tower of Hanoi Solution:")
+for disk,src,dst in moves:
+    print(f"Move disk {disk} from {src} to {dst}")
+print("Total moves:",len(moves))
+______________________________________________________________________________________________________
+
+def print_board(board,n):
+    for i in range(n):
+        for j in range(n):
+            if board[i]==j:
+                print("Q ",end="")
+            else:
+                print(". ",end="")
+        print()
+    print()
+
+def is_safe(board,row,col,n):
+    for i in range(row):
+        if board[i]==col:
+            return False
+        if abs(board[i]-col)==abs(i-row):
+            return False
+    return True
+
+def solve_nqueens(board,row,n):
+    if row==n:
+        return True
+    for col in range(n):
+        if is_safe(board,row,col,n):
+            board[row]=col
+            if solve_nqueens(board,row+1,n):
+                return True
+            board[row]=-1
+    return False
+
+n=8
+board=[-1]*n
+print(f"\n~~~ {n}-Queens Problem using Backtracking ~~~")
+print()
+if solve_nqueens(board,0,n):
+    print("Solution Found:")
+    print_board(board,n)
+else:
+    print("No solution exists.")
+______________________________________________________________________________________________________
+
+rules=[
+    ({"sunny"},"clear_sky"),
+    ({"rainy"},"wet_ground"),
+    ({"clear_sky"},"good_weather"),
+    ({"rainy","wet_ground"},"use_umbrella"),
+    ({"good_weather"},"go_outside")
+]
+
+def run_expert(facts):
+    known=set(facts)
+    changed=True
+    while changed:
+        changed=False
+        for conditions,conclusion in rules:
+            if conditions.issubset(known) and conclusion not in known:
+                known.add(conclusion)
+                changed=True
+                print("IF",conditions,"THEN",conclusion)
+    return known
+
+print("Case 1: Sunny Weather")
+print("Final Facts:",run_expert({"sunny"}))
+print("\nCase 2: Rainy Weather")
+print("Final Facts:",run_expert({"rainy"}))

@@ -1,0 +1,189 @@
+
+class AOStar:
+    def __init__(self, graph, heuristic):
+        self.graph = graph
+        self.heuristic = heuristic
+        self.solution_graph = {}
+
+    def get_heuristic(self, node):
+        return self.heuristic.get(node, 0)
+
+    def calculate_branch_cost(self, branch):
+        total_cost = 0
+        for child, weight in branch:
+            total_cost += weight + self.get_heuristic(child)
+        return total_cost
+
+    def get_best_branch(self, node):
+        if node not in self.graph or not self.graph[node]:
+            return self.get_heuristic(node), []
+        min_cost = float('inf')
+        best_branch = []
+        for branch in self.graph[node]:
+            cost = self.calculate_branch_cost(branch)
+            if cost < min_cost:
+                min_cost = cost
+                best_branch = branch
+        return min_cost, best_branch
+
+    def search(self, node):
+        print(f"Expanding Node: {node}")
+        if node not in self.graph or not self.graph[node]:
+            return
+        min_cost, best_branch = self.get_best_branch(node)
+        self.heuristic[node] = min_cost
+        self.solution_graph[node] = [child for child, _ in best_branch]
+        for child, _ in best_branch:
+            self.search(child)
+        updated_cost, updated_branch = self.get_best_branch(node)
+        self.heuristic[node] = updated_cost
+        self.solution_graph[node] = [child for child, _ in updated_branch]
+
+    def display_solution(self, start_node):
+        print("\n" + "=" * 40)
+        print("FINAL HEURISTIC COSTS FOR NODES")
+        print("=" * 40)
+        for node in sorted(self.heuristic.keys()):
+            print(f"Node {node}: Cost = {self.heuristic[node]}")
+        print("\n" + "=" * 40)
+        print("OPTIMAL SOLUTION SUBGRAPH")
+        print("=" * 40)
+
+        def print_tree(curr_node, depth=0):
+            indent = "   " * depth
+            print(f"{indent}└── {curr_node}")
+            if curr_node in self.solution_graph:
+                for child in self.solution_graph[curr_node]:
+                    print_tree(child, depth + 1)
+
+        print_tree(start_node)
+
+graph = {
+    'A': [[('B', 2)], [('C', 3)]],
+    'B': [[('D', 1), ('E', 4)]],
+    'C': [[('F', 2)], [('G', 5)]],
+    'D': [[('H', 2)], [('I', 3)]],
+    'E': [[('J', 1)]]
+}
+
+heuristic = {
+    'A': 0, 'B': 0, 'C': 0, 'D': 0, 'E': 0,
+    'F': 0, 'G': 0, 'H': 0, 'I': 0, 'J': 0
+}
+
+ao_star = AOStar(graph, heuristic)
+ao_star.search('A')
+ao_star.display_solution('A')
+______________________________________________________________________________________________________
+
+class Node:
+    def __init__(self, name, is_max=True, value=None, children=None):
+        self.name = name
+        self.is_max = is_max
+        self.value = value
+        self.children = children or []
+
+def minimax(node, depth=0):
+    if not node.children:
+        print(f"{'  ' * depth}Leaf Node {node.name} -> Utility Value = {node.value}")
+        return node.value, [node.name]
+    if node.is_max:
+        best_value = float('-inf')
+        best_path = []
+        print(f"{'  ' * depth}Evaluating MAX Node {node.name}...")
+        for child in node.children:
+            val, path = minimax(child, depth + 1)
+            if val > best_value:
+                best_value = val
+                best_path = [node.name] + path
+        print(f"{'  ' * depth}MAX Node {node.name} chooses MAX value: {best_value}")
+        return best_value, best_path
+    else:
+        best_value = float('inf')
+        best_path = []
+        print(f"{'  ' * depth}Evaluating MIN Node {node.name}...")
+        for child in node.children:
+            val, path = minimax(child, depth + 1)
+            if val < best_value:
+                best_value = val
+                best_path = [node.name] + path
+        print(f"{'  ' * depth}MIN Node {node.name} chooses MIN value: {best_value}")
+        return best_value, best_path
+
+D = Node(name='D', value=3)
+E = Node(name='E', value=5)
+F = Node(name='F', value=2)
+G = Node(name='G', value=9)
+
+B = Node(name='B', is_max=False, children=[D, E])
+C = Node(name='C', is_max=False, children=[F, G])
+A = Node(name='A', is_max=True, children=[B, C])
+
+optimal_value, optimal_path = minimax(A)
+
+print("\n" + "=" * 40)
+print(f"Optimal Minimax Value at Root (A): {optimal_value}")
+print(f"Optimal Path: {' -> '.join(optimal_path)}")
+print("=" * 40)
+______________________________________________________________________________________________________
+
+class Rule:
+    def __init__(self, premises, conclusion):
+        self.premises = set(premises)
+        self.conclusion = conclusion
+
+class ForwardChainingEngine:
+    def __init__(self):
+        self.rules = []
+        self.known_facts = set()
+
+    def add_fact(self, fact):
+        self.known_facts.add(fact)
+
+    def add_rule(self, premises, conclusion):
+        self.rules.append(Rule(premises, conclusion))
+
+    def infer(self, query):
+        print(f"Target Query Goal: '{query}'")
+        print(f"Initial Knowledge Base Facts: {sorted(list(self.known_facts))}")
+        print("=" * 60)
+        if query in self.known_facts:
+            print(f"SUCCESS: Query '{query}' is already a known fact.")
+            return True
+        fired_rules = set()
+        added_new_fact = True
+        step = 1
+        while added_new_fact:
+            added_new_fact = False
+            for idx, rule in enumerate(self.rules):
+                if idx in fired_rules:
+                    continue
+                if rule.premises.issubset(self.known_facts):
+                    fired_rules.add(idx)
+                    new_fact = rule.conclusion
+                    premises_str = " AND ".join(sorted(list(rule.premises)))
+                    print(f"Step {step}: Fired Rule #{idx + 1} [IF ({premises_str}) THEN {new_fact}]")
+                    step += 1
+                    if new_fact not in self.known_facts:
+                        self.known_facts.add(new_fact)
+                        added_new_fact = True
+                        print(f"       -> Derived New Fact: '{new_fact}'")
+                        print(f"       -> Current Facts: {sorted(list(self.known_facts))}\n")
+                        if new_fact == query:
+                            print("=" * 60)
+                            print(f"RESULT: SUCCESS - Query '{query}' was derived successfully!")
+                            return True
+        print("=" * 60)
+        print(f"RESULT: FAILED - Query '{query}' cannot be derived from the Knowledge Base.")
+        return False
+
+if __name__ == "__main__":
+    engine = ForwardChainingEngine()
+    engine.add_fact("A")
+    engine.add_fact("B")
+    engine.add_rule(premises=["A", "B"], conclusion="C")
+    engine.add_rule(premises=["C", "D"], conclusion="E")
+    engine.add_rule(premises=["C"], conclusion="F")
+    engine.add_rule(premises=["F"], conclusion="G")
+    target_query = "G"
+    engine.infer(target_query)

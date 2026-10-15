@@ -1,0 +1,81 @@
+
+from collections import deque
+
+def bfs_traversal(graph,start):
+    visited=set()
+    queue=deque([start])
+    visited.add(start)
+    traversal_order=[]
+    while queue:
+        node=queue.popleft()
+        traversal_order.append(node)
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+    return traversal_order
+
+graph={
+    'V1':['V2','V3','V5'],
+    'V2':['V1','V4'],
+    'V3':['V1','V6'],
+    'V4':['V2','V5'],
+    'V5':['V1','V4','V6'],
+    'V6':['V3','V5']
+}
+
+start_node='V1'
+result=bfs_traversal(graph,start_node)
+print("Graph:",graph)
+print("BFS Traversal starting from",start_node,":",result)
+______________________________________________________________________________________________________
+
+import numpy as np
+from sklearn.naive_bayes import GaussianNB
+from sklearn.cluster import KMeans
+
+np.random.seed(42)
+X=np.vstack([np.random.randn(30,2)+[2,2],np.random.randn(30,2)+[0,0]])
+y_true=np.array([0]*30+[1]*30)
+
+X_train=X[:48]
+X_test=X[48:]
+y_train=y_true[:48]
+
+gnb=GaussianNB()
+gnb.fit(X_train,y_train)
+y_pred_sup=gnb.predict(X_test)
+acc_sup=np.mean(y_pred_sup==y_true[48:])
+
+km=KMeans(n_clusters=2,random_state=42,n_init=10)
+km.fit(X_train)
+y_pred_unsup=km.predict(X_test)
+
+print("Supervised (GaussianNB) Predictions:",y_pred_sup.tolist())
+print("Unsupervised (KMeans) Predictions:",y_pred_unsup.tolist())
+print("Supervised Accuracy:",round(acc_sup,2))
+______________________________________________________________________________________________________
+
+ontology={
+    "classes":{
+        "animal":["eats","moves"],
+        "mammal":["has_fur"],
+        "bird":["has_wings"],
+        "dog":["barks"]
+    },
+    "is_a":{
+        "mammal":"animal",
+        "bird":"animal",
+        "dog":"mammal"
+    }
+}
+
+def get_props(cls,onto):
+    props=list(onto["classes"].get(cls,[]))
+    if cls in onto["is_a"]:
+        parent=onto["is_a"][cls]
+        props.extend(get_props(parent,onto))
+    return props
+
+for c in ["dog","bird","mammal"]:
+    print(c,":",get_props(c,ontology))

@@ -1,0 +1,77 @@
+def dls(graph,node,goal,limit,path=[]):
+    path=path+[node]
+    if node==goal:
+        return path
+    if limit<=0:
+        return None
+    for child in graph.get(node,[]):
+        result=dls(graph,child,goal,limit-1,path)
+        if result:
+            return result
+    return None
+graph={
+    'A':['B','C'],
+    'B':['D','E'],
+    'C':['F'],
+    'D':[],
+    'E':[],
+    'F':[]
+}
+start='A'
+goal='F'
+limit=2
+result=dls(graph,start,goal,limit)
+print("Start Node:",start)
+print("Goal Node:",goal)
+print("Depth Limit:",limit)
+print("Path found:",result)
+
+______________________________________________________________________________________________________
+
+import numpy as np
+from sklearn.datasets import make_classification
+from sklearn.naive_bayes import BernoulliNB
+X,y=make_classification(n_samples=50,n_features=2,n_informative=2,n_redundant=0,n_classes=2,random_state=1)
+model=BernoulliNB()
+model.fit(X,y)
+test_values=np.array([[0,0],[0,1],[1,0],[1,1]])
+prediction=model.predict(test_values)
+print("Bernoulli Naive Bayes Classifier")
+print("Number of samples:",50)
+print("Number of classes:",2)
+print("\nInput Values:")
+print(test_values)
+print("\nOutput:")
+print(prediction)
+
+______________________________________________________________________________________________________
+
+import numpy as np
+from sklearn import svm
+X=[
+    [5.1,3.5,1.4,0.2],
+    [4.9,3.0,1.4,0.2],
+    [4.7,3.2,1.3,0.2],
+    [4.6,3.1,1.5,0.2],
+    [5.0,3.2,1.4,0.2],
+    [7.0,3.2,4.7,1.4],
+    [6.4,3.2,4.5,1.5],
+    [5.8,2.7,4.1,1.0],
+    [6.4,2.7,5.3,1.9],
+    [6.9,3.1,4.9,1.5]
+]
+y=[0,0,0,0,0,1,1,1,2,2]
+X_test=[
+    [5.2,3.4,1.5,0.2],
+    [6.5,3.0,4.6,1.5],
+    [6.2,3.0,5.2,2.0]
+]
+model=svm.SVC(kernel='linear',C=1.0)
+model.fit(X,y)
+prediction=model.predict(X_test)
+print("Support Vector Machine (SVM)")
+print("Kernel: Linear")
+print("\nTest Data:")
+print(np.array(X_test))
+print("\nPredicted Classes:")
+print(prediction)

@@ -1,0 +1,65 @@
+
+from queue import PriorityQueue
+
+graph={
+    'A':['B','C'],
+    'B':['A','D','E'],
+    'C':['A','F'],
+    'D':['B','F'],
+    'E':['B','F'],
+    'F':['C','D','E']
+}
+
+heuristic={'A':6,'B':5,'C':3,'D':2,'E':1,'F':0}
+
+def best_first_search(start,goal):
+    visited=set()
+    pq=PriorityQueue()
+    pq.put((heuristic[start],start))
+    while not pq.empty():
+        h,current=pq.get()
+        if current in visited:
+            continue
+        print(current,end=" ")
+        visited.add(current)
+        if current==goal:
+            print("\nGoal Found!")
+            return
+        for neighbor in graph[current]:
+            if neighbor not in visited:
+                pq.put((heuristic[neighbor],neighbor))
+    print("\nGoal Not Found!")
+
+start_node='A'
+goal_node='F'
+print("Traversal using Best First Search:")
+best_first_search(start_node,goal_node)
+______________________________________________________________________________________________________
+
+p_vals=[True,False]
+q_vals=[True,False]
+
+print("TRUTH TABLE: AND | OR | IMPLIES")
+print("="*45)
+
+for p in p_vals:
+    for q in q_vals:
+        and_val=p and q
+        or_val=p or q
+        impl_val=(not p) or q
+        print(f"P={p!s:<5} Q={q!s:<5} AND={and_val!s:<5} OR={or_val!s:<5} IMPLIES={impl_val!s:<5}")
+______________________________________________________________________________________________________
+
+import numpy as np
+
+point1=list(map(float,input("Enter Data Point 1: ").split()))
+point2=list(map(float,input("Enter Data Point 2: ").split()))
+
+a=np.array(point1)
+b=np.array(point2)
+
+distance=np.sqrt(np.sum((a-b)**2))
+
+print("\nData Point 1:",point1)
+print("Data Point 2:",point2)
+print("Euclidean Distance:",round(distance,3))

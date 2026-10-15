@@ -1,0 +1,127 @@
+
+import heapq
+
+graph={
+    'A':[('B',1),('C',4)],
+    'B':[('D',2),('E',5)],
+    'C':[('E',1)],
+    'D':[('F',3)],
+    'E':[('F',2)],
+    'F':[]
+}
+
+heuristic={
+    'A':6,
+    'B':5,
+    'C':3,
+    'D':3,
+    'E':2,
+    'F':0
+}
+
+def a_star_search(start,goal):
+    open_list=[(heuristic[start],0,start,[start])]
+    visited=set()
+
+    while open_list:
+        f,g,node,path=heapq.heappop(open_list)
+
+        if node==goal:
+            return path,g
+
+        if node in visited:
+            continue
+
+        visited.add(node)
+
+        for neighbor,cost in graph[node]:
+            if neighbor not in visited:
+                new_g=g+cost
+                new_f=new_g+heuristic[neighbor]
+                heapq.heappush(open_list,(new_f,new_g,neighbor,path+[neighbor]))
+
+    return None,None
+
+start='A'
+goal='F'
+
+path,cost=a_star_search(start,goal)
+
+print("A* Search Path:",path)
+print("Total Cost:",cost)
+______________________________________________________________________________________________________
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.neural_network import MLPRegressor
+
+np.random.seed(42)
+X=np.sort(5*np.random.rand(60,1),axis=0)
+y_true=2*X.ravel()+1
+y=y_true+0.3*np.random.randn(60)
+
+model=MLPRegressor(hidden_layer_sizes=(8,),max_iter=1000,random_state=42)
+model.fit(X,y)
+y_pred=model.predict(X)
+
+print("\nTrue equation: y=2x+1")
+print(f"Prediction R2: {model.score(X,y):.4f}")
+
+Xg=np.linspace(0,5,200).reshape(-1,1)
+yg=model.predict(Xg)
+
+plt.figure(figsize=(7,4))
+plt.scatter(X,y,s=30,label="Data points")
+plt.plot(Xg,yg,'r-',linewidth=2,label="ANN regression")
+plt.plot(X,y_true,'k--',label="True line y=2x+1")
+plt.xlabel("X")
+plt.ylabel("y")
+plt.legend()
+plt.grid(alpha=.3)
+plt.title("ANN for Linear Regression")
+plt.tight_layout()
+plt.show()
+
+print("Program completed!")
+______________________________________________________________________________________________________
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import svm
+from sklearn.datasets import make_moons
+
+X, y = make_moons(n_samples=200, noise=0.2, random_state=42)
+
+kernels = ['linear', 'rbf', 'poly', 'sigmoid']
+knames = ['Linear', 'RBF', 'Polynomial', 'Sigmoid']
+
+x_min = X[:, 0].min() - 0.5
+x_max = X[:, 0].max() + 0.5
+y_min = X[:, 1].min() - 0.5
+y_max = X[:, 1].max() + 0.5
+
+xx, yy = np.meshgrid(
+    np.arange(x_min, x_max, 0.05),
+    np.arange(y_min, y_max, 0.05)
+)
+
+fig, axes = plt.subplots(2, 2, figsize=(9, 9))
+
+for axis, kernel, name in zip(axes.ravel(), kernels, knames):
+    clf = svm.SVC(kernel=kernel, C=1.0, gamma='scale')
+    clf.fit(X, y)
+
+    Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+
+    axis.contourf(xx, yy, Z, alpha=0.4, cmap='coolwarm')
+    axis.scatter(X[:, 0], X[:, 1], c=y, cmap='coolwarm', edgecolor='k', s=25)
+    axis.set_title('Decision Boundary - ' + name + ' Kernel')
+    axis.set_xlabel('Feature 1')
+    axis.set_ylabel('Feature 2')
+
+plt.suptitle('SVM Decision Boundaries for Different Kernels')
+plt.tight_layout()
+plt.show()
+
+print("Program 5 (Set A) completed!")

@@ -1,0 +1,80 @@
+from collections import deque
+def bfs_traversal(graph,start):
+    visited=set()
+    queue=deque([start])
+    visited.add(start)
+    traversal_order=[]
+    while queue:
+        node=queue.popleft()
+        traversal_order.append(node)
+        for neighbor in graph[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+    return traversal_order
+graph={
+    1:[2,3],
+    2:[1,4,5],
+    3:[1,6,7],
+    4:[2,8,9],
+    5:[2,10,11],
+    6:[3,12,13],
+    7:[3,14,15],
+    8:[4],
+    9:[4],
+    10:[5],
+    11:[5],
+    12:[6],
+    13:[6],
+    14:[7],
+    15:[7]
+}
+start_node=1
+result=bfs_traversal(graph,start_node)
+print("BFS Traversal starting from",start_node,":",result)
+______________________________________________________________________________________________________
+
+values=[3,5,2,9,0,7]
+def alpha_beta(node,depth,is_max,alpha,beta,leaves):
+    if depth==0:
+        return leaves[node]
+    if is_max:
+        best=float("-inf")
+        for i in range(2):
+            val=alpha_beta(node*2+i,depth-1,False,alpha,beta,leaves)
+            best=max(best,val)
+            alpha=max(alpha,best)
+            if beta<=alpha:
+                break
+        return best
+    else:
+        best=float("inf")
+        for i in range(2):
+            val=alpha_beta(node*2+i,depth-1,True,alpha,beta,leaves)
+            best=min(best,val)
+            beta=min(beta,best)
+            if beta<=alpha:
+                break
+        return best
+result=alpha_beta(0,2,True,float("-inf"),float("inf"),values)
+print("Alpha-Beta result:",result)
+print("Leaf values:",values)
+______________________________________________________________________________________________________
+
+p_vals=[True,False]
+q_vals=[True,False]
+print("\nTRUTH TABLE:\n\t\tAND\t | OR\t | NOT\t      | IMPLIES\t   | XOR")
+print("="*70)
+for p in p_vals:
+    for q in q_vals:
+        and_val=p and q
+        or_val=p or q
+        not_val=not p
+        impl_val=(not p) or q
+        xor_val=p!=q
+        print(f"p={p!s:<5} q={q!s:<5} "
+              f"AND={and_val!s:<5} "
+              f"OR={or_val!s:<5} "
+              f"NOT={not_val!s:<5} "
+              f"IMPLIES={impl_val!s:<5} "
+              f"XOR={xor_val!s:<5}")

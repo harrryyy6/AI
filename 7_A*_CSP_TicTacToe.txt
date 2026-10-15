@@ -1,0 +1,197 @@
+import heapq
+
+def a_star_search(graph,heuristic,start,goal):
+    open_list=[(heuristic[start],0,start,[start])]
+    visited=set()
+    while open_list:
+        f,g,node,path=heapq.heappop(open_list)
+        if node==goal:
+            return path,g
+        if node in visited:
+            continue
+        visited.add(node)
+        for neighbor,cost in graph[node]:
+            if neighbor not in visited:
+                new_g=g+cost
+                new_f=new_g+heuristic[neighbor]
+                heapq.heappush(open_list,(new_f,new_g,neighbor,path+[neighbor]))
+    return None,None
+
+graph={
+    'V1':[('V2',2),('V3',4)],
+    'V2':[('V1',2),('V4',3)],
+    'V3':[('V1',4),('V4',1),('V5',5)],
+    'V4':[('V2',3),('V3',1),('V6',2)],
+    'V5':[('V3',5),('V6',1)],
+    'V6':[('V4',2),('V5',1)]
+}
+heuristic={'V1':0,'V2':0,'V3':0,'V4':0,'V5':0,'V6':0}
+start='V1'
+goal='V6'
+path,cost=a_star_search(graph,heuristic,start,goal)
+print("A* Shortest Path:",path)
+print("Total Cost:",cost)
+______________________________________________________________________________________________________
+
+def is_safe(region,color,assignment,graph):
+    for neighbor in graph[region]:
+        if neighbor in assignment and assignment[neighbor]==color:
+            return False
+    return True
+
+def map_coloring(graph,colors,assignment,regions):
+    if len(assignment)==len(regions):
+        return True
+    for region in regions:
+        if region not in assignment:
+            break
+    for color in colors:
+        if is_safe(region,color,assignment,graph):
+            assignment[region]=color
+            if map_coloring(graph,colors,assignment,regions):
+                return True
+            del assignment[region]
+    return False
+
+graph={
+    'A':['B','C'],
+    'B':['A','D'],
+    'C':['A','E'],
+    'D':['B','E'],
+    'E':['C','D']
+}
+colors=['Red','Green','Blue']
+regions=list(graph.keys())
+assignment={}
+print("=== Map Coloring Problem (CSP) ===")
+print("Regions:",regions)
+print("Colors:",colors)
+print()
+if map_coloring(graph,colors,assignment,regions):
+    print("Solution Found:")
+    for region,color in assignment.items():
+        print(region,"->",color)
+else:
+    print("No solution exists.")
+______________________________________________________________________________________________________
+
+import math
+import random
+
+HUMAN='X'
+COMPUTER='O'
+EMPTY=' '
+WIN_COMBOS=[(0,1,2),(3,4,5),(6,7,8),(0,3,6),(1,4,7),(2,5,8),(0,4,8),(2,4,6)]
+
+def print_board(board):
+    print()
+    for r in range(3):
+        cells=[]
+        for i in range(3):
+            pos=r*3+i
+            cells.append(board[pos] if board[pos]!=EMPTY else str(pos))
+        print(f" {cells[0]} | {cells[1]} | {cells[2]} ")
+        if r<2:
+            print("---+---+---")
+    print()
+
+def get_winner(board):
+    for a,b,c in WIN_COMBOS:
+        if board[a]!=EMPTY and board[a]==board[b]==board[c]:
+            return board[a]
+    return None
+
+def is_board_full(board):
+    return EMPTY not in board
+
+def is_game_over(board):
+    return get_winner(board) is not None or is_board_full(board)
+
+def available_moves(board):
+    return [i for i,cell in enumerate(board) if cell==EMPTY]
+
+def minimax(board,depth,is_maximizing,alpha,beta):
+    winner=get_winner(board)
+    if winner==COMPUTER:
+        return 10-depth
+    if winner==HUMAN:
+        return depth-10
+    if is_board_full(board):
+        return 0
+    if is_maximizing:
+        best_score=-math.inf
+        for move in available_moves(board):
+            board[move]=COMPUTER
+            score=minimax(board,depth+1,False,alpha,beta)
+            board[move]=EMPTY
+            best_score=max(best_score,score)
+            alpha=max(alpha,best_score)
+            if beta<=alpha:
+                break
+        return best_score
+    else:
+        best_score=math.inf
+        for move in available_moves(board):
+            board[move]=HUMAN
+            score=minimax(board,depth+1,True,alpha,beta)
+            board[move]=EMPTY
+            best_score=min(best_score,score)
+            beta=min(beta,best_score)
+            if beta<=alpha:
+                break
+        return best_score
+
+def best_move(board):
+    best_score=-math.inf
+    move_choice=None
+    for move in available_moves(board):
+        board[move]=COMPUTER
+        score=minimax(board,0,False,-math.inf,math.inf)
+        board[move]=EMPTY
+        if score>best_score:
+            best_score=score
+            move_choice=move
+    return move_choice
+
+def get_human_move(board):
+    while True:
+        try:
+            move=int(input("Enter your move (0-8): "))
+            if move not in range(9):
+                print("Move must be between 0 and 8.")
+            elif board[move]!=EMPTY:
+                print("That cell is already taken.")
+            else:
+                return move
+        except ValueError:
+            print("Please enter a number between 0 and 8.")
+
+def play_game():
+    board=[EMPTY]*9
+    print("Welcome to Tic-Tac-Toe!")
+    print("You are X.")
+    print("Computer is O and uses Minimax Algorithm.")
+    print("\nCell numbers:")
+    print_board([str(i) for i in range(9)])
+    current=random.choice([HUMAN,COMPUTER])
+    print("You will go first!" if current==HUMAN else "Computer will go first!")
+    while not is_game_over(board):
+        print_board(board)
+        if current==HUMAN:
+            move=get_human_move(board)
+        else:
+            print("Computer is thinking...")
+            move=best_move(board)
+            print("Computer chooses cell",move)
+        board[move]=current
+        current=COMPUTER if current==HUMAN else HUMAN
+    print_board(board)
+    winner=get_winner(board)
+    if winner==HUMAN:
+        print("Congratulations, you win!")
+    elif winner==COMPUTER:
+        print("Computer wins! Better luck next time.")
+    else:
+        print("It's a draw!")
+
+play_game()

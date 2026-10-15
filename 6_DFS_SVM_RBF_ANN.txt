@@ -1,0 +1,87 @@
+def dfs(graph,start,visited=None):
+    if visited is None:
+        visited=[]
+    visited.append(start)
+    for neighbor in graph[start]:
+        if neighbor not in visited:
+            dfs(graph,neighbor,visited)
+    return visited
+graph={
+    'A':['B','C','E'],
+    'B':['A','D'],
+    'C':['A','F'],
+    'D':['B','E'],
+    'E':['A','D','F'],
+    'F':['C','E']
+}
+print("DFS Traversal:",dfs(graph,'A'))
+______________________________________________________________________________________________________
+from sklearn.svm import SVC
+X=[[1,2],[2,3],[5,5]]
+y=[0,0,1]
+model=SVC(kernel='rbf',C=1.0,gamma='scale')
+model.fit(X,y)
+test_input=[[4,4]]
+prediction=model.predict(test_input)
+print("Non-Linear Support Vector Machine")
+print("Kernel: RBF")
+print("Training Data:",X)
+print("Class Labels:",y)
+print("Test Input:",test_input[0])
+print("Predicted Class:",prediction[0])
+______________________________________________________________________________________________________
+
+import numpy as np
+X=np.array([[3,1.5],[2,1],[4,1.5],[3,4],[3.5,0.5],[2,0.5],[5.5,1],[1,1]],dtype=float)
+y=np.array([0,1,0,1,0,1,1,0],dtype=float).reshape(-1,1)
+np.random.seed(1)
+W1=np.random.randn(2,4)*0.5
+b1=np.zeros((1,4))
+W2=np.random.randn(4,1)*0.5
+b2=np.zeros((1,1))
+
+def sigmoid(x):
+    return 1/(1+np.exp(-np.clip(x,-50,50)))
+
+def train_ann(lr,epochs):
+    global W1,b1,W2,b2
+    np.random.seed(1)
+    W1=np.random.randn(2,4)*0.5
+    b1=np.zeros((1,4))
+    W2=np.random.randn(4,1)*0.5
+    b2=np.zeros((1,1))
+    for epoch in range(epochs):
+        H=sigmoid(X@W1+b1)
+        pred=sigmoid(H@W2+b2)
+        error=pred-y
+        d_output=error*pred*(1-pred)
+        dW2=H.T@d_output/len(X)
+        db2=np.sum(d_output,axis=0,keepdims=True)/len(X)
+        d_hidden=d_output@W2.T
+        d_hidden*=H*(1-H)
+        dW1=X.T@d_hidden/len(X)
+        db1=np.sum(d_hidden,axis=0,keepdims=True)/len(X)
+        W2-=lr*dW2
+        b2-=lr*db2
+        W1-=lr*dW1
+        b1-=lr*db1
+    H=sigmoid(X@W1+b1)
+    pred=sigmoid(H@W2+b2)
+    predicted_class=(pred>=0.5).astype(int)
+    accuracy=np.mean(predicted_class==y)
+    return np.mean((pred-y)**2),accuracy,predicted_class.flatten()
+
+print("Basic ANN - Hyperparameter Testing")
+print("----------------------------------")
+for lr,epochs in [(0.01,20),(0.1,20),(0.5,200),(1.0,1000)]:
+    loss,accuracy,result=train_ann(lr,epochs)
+    print("Learning Rate:",lr,"Epochs:",epochs,"Accuracy:",round(accuracy*100,2),"%")
+lr=0.5
+epochs=200
+loss,accuracy,result=train_ann(lr,epochs)
+print("\nIdeal Learning Rate:",lr)
+print("Ideal Number of Epochs:",epochs)
+print("Final Loss:",round(loss,4))
+print("\nActual Targets:   ",y.flatten().astype(int))
+print("Predicted Outputs:",result)
+print("Accuracy:",round(accuracy*100,2),"%")

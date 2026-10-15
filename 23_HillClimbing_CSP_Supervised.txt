@@ -1,0 +1,99 @@
+
+def f(x):
+    return-(x**2)+4*x
+
+def hill_climb(start):
+    cur=start
+
+    while True:
+        if f(cur+1)>f(cur):
+            cur+=1
+        elif f(cur-1)>f(cur):
+            cur-=1
+        else:
+            return cur,f(cur)
+
+x,val=hill_climb(2)
+
+print("Maximum at x =",x)
+print("Maximum value =",val)
+______________________________________________________________________________________________________
+
+def is_safe(region,color,assignment,graph):
+    for neighbor in graph[region]:
+        if neighbor in assignment:
+            if assignment[neighbor]==color:
+                return False
+    return True
+
+def map_coloring(graph,colors,assignment,regions):
+    if len(assignment)==len(regions):
+        return True
+    for region in regions:
+        if region not in assignment:
+            break
+    for color in colors:
+        if is_safe(region,color,assignment,graph):
+            assignment[region]=color
+            if map_coloring(graph,colors,assignment,regions):
+                return True
+            del assignment[region]
+    return False
+
+graph={
+    'A':['B','C'],
+    'B':['A','C','D'],
+    'C':['A','B','E'],
+    'D':['B','E'],
+    'E':['C','D'],
+}
+
+colors=["Red","Blue","Green","Yellow","Purple"]
+regions=list(graph.keys())
+assignment={}
+
+print("--- Map Coloring Problem using CSP ---")
+print("Regions:",regions)
+print("Colors:",colors)
+
+if map_coloring(graph,colors,assignment,regions):
+    print("\nSolution Found:")
+    for region in regions:
+        print(region,"->",assignment[region])
+else:
+    print("\nNo solution exists.")
+______________________________________________________________________________________________________
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.cluster import KMeans
+from sklearn.metrics import accuracy_score
+
+X = [
+    [2,30],
+    [3,35],
+    [4,40],
+    [7,70],
+    [8,75],
+    [9,80]
+]
+
+y=[0,0,0,1,1,1]
+
+model=DecisionTreeClassifier(random_state=42)
+model.fit(X,y)
+y_pred=model.predict(X)
+
+print("SUPERVISED LEARNING")
+print("-------------------")
+print("Actual Labels    :",y)
+print("Predicted Labels :",list(y_pred))
+print("Accuracy         :",accuracy_score(y,y_pred))
+
+kmeans=KMeans(n_clusters=2,random_state=42,n_init=10)
+clusters=kmeans.fit_predict(X)
+
+print("\nUNSUPERVISED LEARNING")
+print("---------------------")
+print("Cluster Labels :",list(clusters))
+print("Cluster Centers:")
+print(kmeans.cluster_centers_)

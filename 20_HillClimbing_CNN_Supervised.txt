@@ -1,0 +1,141 @@
+
+def f(x):
+    return-(x**2)+10*x
+
+def hill_climb(start):
+    cur=start
+
+    while True:
+        if f(cur+1)>f(cur):
+            cur+=1
+        elif f(cur-1)>f(cur):
+            cur-=1
+        else:
+            return cur,f(cur)
+
+x,val=hill_climb(2)
+
+print("Maximum at x =",x)
+print("Maximum value =",val)
+______________________________________________________________________________________________________
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+def make_object(label, size=16):
+    img = np.zeros((size, size))
+
+    if label == "person":
+        img[6:13, 6:10] = 1
+        img[3:6, 7:9] = 1
+        img[13:16, 5:7] = 1
+        img[13:16, 9:11] = 1
+    elif label == "car":
+        img[8:12, 3:13] = 1
+        img[6:8, 5:11] = 1
+        img[12:14, 4:6] = 1
+        img[12:14, 10:12] = 1
+    elif label == "dog":
+        img[7:12, 4:12] = 1
+        img[5:9, 11:14] = 1
+        img[11:15, 5:7] = 1
+        img[11:15, 9:11] = 1
+        img[6:9, 2:4] = 1
+
+    return img
+
+kern_h = np.array([
+    [1, 1, 1],
+    [0, 0, 0],
+    [-1, -1, -1]
+])
+
+kern_v = np.array([
+    [1, 0, -1],
+    [1, 0, -1],
+    [1, 0, -1]
+])
+
+def features(img):
+    fh = sum(
+        abs(np.sum(img[i:i+3, j:j+3] * kern_h))
+        for i in range(14)
+        for j in range(14)
+    )
+    fv = sum(
+        abs(np.sum(img[i:i+3, j:j+3] * kern_v))
+        for i in range(14)
+        for j in range(14)
+    )
+    return np.array([fh, fv])
+
+templates = {
+    "person": features(make_object("person")),
+    "car": features(make_object("car")),
+    "dog": features(make_object("dog"))
+}
+
+def detect(img):
+    f = features(img)
+    distances = {
+        name: np.linalg.norm(f - template)
+        for name, template in templates.items()
+    }
+    return min(distances, key=distances.get)
+
+print("CNN Basic Object Detection")
+print("===========================")
+
+for obj in ["person", "car", "dog"]:
+    img = make_object(obj)
+    prediction = detect(img)
+    print("Detected:", prediction, "(True object:", obj + ")")
+
+fig, axes = plt.subplots(1, 3, figsize=(9, 3))
+
+for ax, obj in zip(axes, ["person", "car", "dog"]):
+    img = make_object(obj)
+    ax.imshow(img, cmap="gray")
+    ax.set_title("True: " + obj + "\nDetected: " + detect(img))
+    ax.axis("off")
+
+plt.suptitle("CNN Basic Object Detection")
+plt.tight_layout()
+plt.show()
+
+print("Program completed!")
+______________________________________________________________________________________________________
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.cluster import KMeans
+from sklearn.metrics import accuracy_score
+
+X = [
+    [2,30],
+    [3,35],
+    [4,40],
+    [7,70],
+    [8,75],
+    [9,80]
+]
+
+y=[0,0,0,1,1,1]
+
+model=DecisionTreeClassifier(random_state=42)
+model.fit(X,y)
+y_pred=model.predict(X)
+
+print("SUPERVISED LEARNING")
+print("-------------------")
+print("Actual Labels    :",y)
+print("Predicted Labels :",list(y_pred))
+print("Accuracy         :",accuracy_score(y,y_pred))
+
+kmeans=KMeans(n_clusters=2,random_state=42,n_init=10)
+clusters=kmeans.fit_predict(X)
+
+print("\nUNSUPERVISED LEARNING")
+print("---------------------")
+print("Cluster Labels :",list(clusters))
+print("Cluster Centers:")
+print(kmeans.cluster_centers_)

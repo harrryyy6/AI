@@ -1,0 +1,147 @@
+import heapq
+
+GOAL=((1,2),(3,0))
+
+def manhattan(state):
+    distance=0
+    for r in range(2):
+        for c in range(2):
+            value=state[r][c]
+            if value!=0:
+                goal_r=(value-1)//2
+                goal_c=(value-1)%2
+                distance+=abs(r-goal_r)+abs(c-goal_c)
+    return distance
+
+def neighbors(state):
+    board=[list(row) for row in state]
+    for r in range(2):
+        for c in range(2):
+            if board[r][c]==0:
+                br,bc=r,c
+    for dr,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+        nr=br+dr
+        nc=bc+dc
+        if 0<=nr<2 and 0<=nc<2:
+            new_board=[row[:] for row in board]
+            new_board[br][bc],new_board[nr][nc]=new_board[nr][nc],new_board[br][bc]
+            yield tuple(tuple(row) for row in new_board)
+
+def solve_puzzle(start):
+    start=tuple(tuple(row) for row in start)
+    pq=[(manhattan(start),0,start,[])]
+    visited=set()
+    while pq:
+        f,g,state,moves=heapq.heappop(pq)
+        if state==GOAL:
+            return moves
+        if state in visited:
+            continue
+        visited.add(state)
+        for next_state in neighbors(state):
+            if next_state not in visited:
+                new_g=g+1
+                new_f=new_g+manhattan(next_state)
+                heapq.heappush(pq,(new_f,new_g,next_state,moves+[next_state]))
+    return None
+
+start=[[1,2],[0,3]]
+print("Start State:")
+for row in start:
+    print(row)
+print("\nGoal State:")
+for row in GOAL:
+    print(list(row))
+solution=solve_puzzle(start)
+print("\nSolution:")
+if solution is not None:
+    for i,state in enumerate(solution,1):
+        print("Step",i)
+        for row in state:
+            print(list(row))
+else:
+    print("No solution found.")
+
+______________________________________________________________________________________________________
+
+values=[3,5,2,9,12,5,23,15]
+nodes=[0]
+
+def minimax(node,depth,is_max):
+    nodes[0]+=1
+    if depth==0:
+        return values[node]
+    if is_max:
+        best=float("-inf")
+        for i in range(2):
+            best=max(best,minimax(node*2+i,depth-1,False))
+        return best
+    else:
+        best=float("inf")
+        for i in range(2):
+            best=min(best,minimax(node*2+i,depth-1,True))
+        return best
+
+def alpha_beta(node,depth,is_max,alpha,beta):
+    nodes[0]+=1
+    if depth==0:
+        return values[node]
+    if is_max:
+        best=float("-inf")
+        for i in range(2):
+            best=max(best,alpha_beta(node*2+i,depth-1,False,alpha,beta))
+            alpha=max(alpha,best)
+            if beta<=alpha:
+                break
+        return best
+    else:
+        best=float("inf")
+        for i in range(2):
+            best=min(best,alpha_beta(node*2+i,depth-1,True,alpha,beta))
+            beta=min(beta,best)
+            if beta<=alpha:
+                break
+        return best
+
+nodes[0]=0
+minimax_result=minimax(0,3,True)
+minimax_nodes=nodes[0]
+nodes[0]=0
+alpha_beta_result=alpha_beta(0,3,True,float("-inf"),float("inf"))
+alpha_beta_nodes=nodes[0]
+
+print("Game Tree Leaf Values:",values)
+print("\nMinimax Result:",minimax_result)
+print("Minimax Nodes:",minimax_nodes)
+print("\nAlpha-Beta Result:",alpha_beta_result)
+print("Alpha-Beta Nodes:",alpha_beta_nodes)
+print("\nNodes Saved:",minimax_nodes-alpha_beta_nodes)
+reduction=(minimax_nodes-alpha_beta_nodes)/minimax_nodes*100
+print("Node Reduction:",round(reduction,1),"%")
+
+______________________________________________________________________________________________________
+
+rules=[
+    ({"sunny"},"clear_sky"),
+    ({"rainy"},"wet_ground"),
+    ({"clear_sky"},"good_weather"),
+    ({"rainy","wet_ground"},"use_umbrella"),
+    ({"good_weather"},"go_outside")
+]
+
+def run_expert(facts):
+    known=set(facts)
+    changed=True
+    while changed:
+        changed=False
+        for conditions,conclusion in rules:
+            if conditions.issubset(known) and conclusion not in known:
+                known.add(conclusion)
+                changed=True
+                print("IF",conditions,"THEN",conclusion)
+    return known
+
+print("Case 1: Sunny Weather")
+print("Final Facts:",run_expert({"sunny"}))
+print("\nCase 2: Rainy Weather")
+print("Final Facts:",run_expert({"rainy"}))

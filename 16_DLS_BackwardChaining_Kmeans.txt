@@ -1,0 +1,112 @@
+
+def dls(graph,node,goal,limit,path=None):
+    if path is None:
+        path=[]
+    path=path+[node]
+    if node==goal:
+        return path
+    if limit<=0:
+        return None
+    for child in graph.get(node,[]):
+        result=dls(graph,child,goal,limit-1,path)
+        if result:
+            return result
+    return None
+
+graph={1:[2,3],2:[4,5],3:[6],4:[],5:[],6:[]}
+start=1
+goal=6
+limit=2
+result=dls(graph,start,goal,limit)
+
+print("Start Node:",start)
+print("Goal Node:",goal)
+print("Depth Limit:",limit)
+print("Path found:",result)
+______________________________________________________________________________________________________
+
+facts={"furry","meows"}
+rules=[
+    (["furry","meows"],"is_cat"),
+    (["is_cat"],"likes_milk"),
+    (["likes_milk"],"drinks_milk")
+]
+
+def bc(goal,known,depth=0):
+    indent=" "*depth
+    if goal in known:
+        print(indent+goal+" is a known fact")
+        return True
+    for premises,conclusion in rules:
+        if conclusion==goal:
+            print(indent+"Trying rule:",premises,"->",conclusion)
+            if all(bc(p,known,depth+1) for p in premises):
+                known.add(goal)
+                print(indent+conclusion+" PROVED")
+                return True
+    print(indent+goal+" cannot be proved")
+    return False
+
+for goal in ["is_cat","drinks_milk","is_dog"]:
+    print("\nProve:",goal)
+    result=bc(goal,facts)
+    print("Result:",result)
+______________________________________________________________________________________________________
+
+country_data.csv:
+
+country_nm,child_mortality,exports,health,imports,income,inflation,life_expectancy,total_fertility,gdp
+Afghanistan,90.2,10.0,7.58,44.9,1610,9.44,56.2,5.82,553
+Albania,16.6,28.0,6.55,48.6,9930,4.49,76.3,1.65,4090
+Algeria,27.3,38.4,4.17,31.4,12900,16.1,76.5,2.89,4460
+Angola,119.0,62.3,2.85,42.9,5900,22.4,60.1,6.16,3530
+Africa,10.3,45.5,6.03,58.9,19100,1.44,76.8,2.13,12200
+Argentina,14.5,18.9,8.10,16.0,18700,20.9,75.8,2.37,10300
+Armenia,18.1,20.8,4.40,45.3,6700,7.77,73.3,1.69,3220
+Australia,4.8,19.8,8.73,20.9,41400,1.16,82.0,1.93,51900
+Austria,4.3,51.3,11.0,47.8,43200,0.873,80.5,1.44,46900
+Azerbaijan,39.2,54.3,5.88,20.7,16000,13.8,69.1,1.92,5840
+Bahamas,13.8,35.0,7.89,43.7,22900,-0.393,73.8,1.86,28000
+Bahrain,8.6,69.5,4.97,50.9,41100,7.44,76.0,2.16,20700
+Bangladesh,49.4,16.0,3.52,21.8,2440,7.14,70.4,2.52,758
+Belgium,4.5,76.4,10.7,74.7,41100,1.88,80.0,1.86,44400
+Canada,5.6,29.1,11.3,31.0,40700,2.87,81.3,1.63,47400
+China,15.7,26.3,5.07,22.6,9530,6.94,74.6,1.59,4560
+Germany,4.2,42.3,11.6,37.1,40400,0.758,80.1,1.39,41800
+India,58.8,22.6,4.05,27.1,4410,8.98,66.2,2.6,1350
+Japan,3.2,15.0,9.49,13.6,35800,-1.9,82.8,1.39,44500
+United Kingdom,5.2,28.2,9.64,30.8,36200,1.57,80.3,1.92,38900
+United States,7.3,12.4,17.9,15.8,49400,1.22,78.7,1.93,48400
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+
+data=pd.read_csv("country_data.csv")
+print("Dataset:")
+print(data.head())
+
+features=['child_mortality','exports','health','imports','income','inflation','life_expectancy','total_fertility']
+X=data[features]
+
+print("\nMissing Values:")
+print(X.isnull().sum())
+
+scaler=StandardScaler()
+X_scaled=scaler.fit_transform(X)
+
+wcss=[]
+for k in range(3,11):
+    model=KMeans(n_clusters=k,random_state=42,n_init=10)
+    model.fit(X_scaled)
+    wcss.append(model.inertia_)
+    print("K =",k,"WCSS =",round(model.inertia_,2))
+
+plt.figure(figsize=(8,5))
+plt.plot(range(3,11),wcss,marker='o')
+plt.xlabel("Number of Clusters (K)")
+plt.ylabel("WCSS")
+plt.title("Elbow Method for K-Means Clustering")
+plt.grid(True)
+plt.show()

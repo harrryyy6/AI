@@ -1,0 +1,112 @@
+from collections import deque
+
+queue=deque(["Monkey at Door"])
+visited=[]
+
+while queue:
+    state=queue.popleft()
+
+    if state not in visited:
+        visited.append(state)
+        print(state)
+
+        if state=="Monkey at Door":
+            queue.append("Monkey at Box")
+
+        elif state=="Monkey at Box":
+            queue.append("Box Under Banana")
+
+        elif state=="Box Under Banana":
+            queue.append("Monkey Climbs Box")
+
+        elif state=="Monkey Climbs Box":
+            queue.append("Monkey Gets Banana")
+
+        elif state=="Monkey Gets Banana":
+            print("\nGoal: Banana Obtained!")
+            break
+
+______________________________________________________________________________________________________
+
+import heapq
+def a_star_search(graph,heuristic,start,goal):
+    open_list=[(heuristic[start],0,start,[start])]
+    visited=set()
+    while open_list:
+        f,g,node,path=heapq.heappop(open_list)
+        if node==goal:
+            return path,g
+        if node in visited:
+            continue
+        visited.add(node)
+        for neighbor,cost in graph[node]:
+            if neighbor not in visited:
+                new_g=g+cost
+                new_f=new_g+heuristic[neighbor]
+                heapq.heappush(open_list,(new_f,new_g,neighbor,path+[neighbor]))
+    return None,None
+graph={
+    'A':[('B',1),('C',4)],
+    'B':[('D',2),('E',5)],
+    'C':[('F',3)],
+    'D':[('G',3)],
+    'E':[('G',1)],
+    'F':[('G',2)],
+    'G':[]
+}
+heuristic={
+    'A':6,
+    'B':5,
+    'C':4,
+    'D':3,
+    'E':2,
+    'F':2,
+    'G':0
+}
+start='A'
+goal='G'
+path,cost=a_star_search(graph,heuristic,start,goal)
+print("A* Shortest Path:",path)
+print("Total Cost:",cost)
+
+______________________________________________________________________________________________________
+
+def is_safe(region,color,assignment,graph):
+    for neighbor in graph[region]:
+        if neighbor in assignment and assignment[neighbor]==color:
+            return False
+    return True
+
+def map_coloring(graph,colors,assignment,regions):
+    if len(assignment)==len(regions):
+        return True
+    for region in regions:
+        if region not in assignment:
+            break
+    for color in colors:
+        if is_safe(region,color,assignment,graph):
+            assignment[region]=color
+            if map_coloring(graph,colors,assignment,regions):
+                return True
+            del assignment[region]
+    return False
+
+graph={
+    'A':['B','C'],
+    'B':['A','D'],
+    'C':['A','D'],
+    'D':['B','C']
+}
+colors=['Red','Green','Blue']
+regions=list(graph.keys())
+assignment={}
+print("=== Map Coloring Problem (CSP) ===")
+print("Regions:",regions)
+print("Colors:",colors)
+print()
+if map_coloring(graph,colors,assignment,regions):
+    print("Solution Found:")
+    for region,color in assignment.items():
+        print(region,"->",color)
+else:
+    print("No solution exists.")
